@@ -9,27 +9,38 @@ void LedController::begin()
     pinMode(_greenPin, OUTPUT);
     pinMode(_redPin, OUTPUT);
 
-    digitalWrite(_greenPin, HIGH);
-    digitalWrite(_redPin, HIGH);
+    digitalWrite(_greenPin, LOW);
+    digitalWrite(_redPin, LOW);
+    _lastToggle = millis();
 }
 
 void LedController::loop()
 {
-    if (_openState)
+    if (millis() - _lastToggle <= 2000)
     {
-        digitalWrite(_greenPin, HIGH);
-        digitalWrite(_redPin, LOW);
+        if (_openState)
+        {
+            digitalWrite(_greenPin, HIGH);
+            digitalWrite(_redPin, LOW);
+        }
+        else
+        {
+            digitalWrite(_greenPin, LOW);
+            digitalWrite(_redPin, HIGH);
+        }
     }
     else
     {
         digitalWrite(_greenPin, LOW);
-        digitalWrite(_redPin, HIGH);
+        digitalWrite(_redPin, LOW);
     }
 }
 
 void LedController::setOpen(bool open)
 {
+    
     _openState = open;
+    _lastToggle = millis();
 }
 
 bool LedController::status() const

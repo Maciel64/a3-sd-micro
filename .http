@@ -2,12 +2,12 @@
 
 ###
 
-POST http://{{micro_host}}:8070/gate
+POST http://192.168.1.122:80/gate
 
 {
-  "open": true
+  "open": false
 }
 
 ###
 
-GET http://{{micro_host}}:8070/status
+GET http://192.168.1.122:80/status

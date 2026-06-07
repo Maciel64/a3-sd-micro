@@ -2,10 +2,12 @@
 
 #include <ESP8266WiFi.h>
 #include <ArduinoJson.h>
+#include "../buzzer/music.h"
 
-WebServerService::WebServerService(LedController &led)
-    : server(8070),
-      ledController(led) {}
+WebServerService::WebServerService(LedController &led, BuzzerController &buzzer)
+    : server(80),
+      ledController(led),
+      buzzerController(buzzer) {}
 
 void WebServerService::begin()
 {
@@ -38,17 +40,22 @@ void WebServerService::registerRoutes()
     server.on("/gate/open", HTTP_GET, [this]()
               { 
         ledController.setOpen(true);
+        // play success melody
+        buzzerController.play(SUCCESS_NOTES, SUCCESS_NOTES_LEN);
         server.send(
-                                                                                  200,
-                                                                                  "application/json",
-                                                                                  "{\"success\":true}"); });
+            200,
+            "application/json",
+            "{\"success\":true}"); });
 
     server.on("/gate/close", HTTP_GET, [this]()
               { 
-                ledController.setOpen(false);server.send(
-                    200,
-                    "application/json",
-                    "{\"success\":true}"); });
+                                ledController.setOpen(false);
+                                // play failure melody
+                                buzzerController.play(FAILURE_NOTES, FAILURE_NOTES_LEN);
+                                server.send(
+                                        200,
+                                        "application/json",
+                                        "{\"success\":true}"); });
 
     server.on("/gate", HTTP_POST, [this]()
               {
@@ -65,7 +72,7 @@ void WebServerService::registerRoutes()
         }
 
         DynamicJsonDocument doc(1024);
-        DeserializationError err = deserializeJson(doc, body);
+        DeserializationError err = deserializeJson(doc, body); 
 
         if (err) {
             server.send(400, "application/json", "{\"error\":\"invalid json\"}");
@@ -78,6 +85,11 @@ void WebServerService::registerRoutes()
         if (doc.containsKey("open")) {
             bool open = doc["open"];
             ledController.setOpen(open);
+            if (open) {
+                buzzerController.play(SUCCESS_NOTES, SUCCESS_NOTES_LEN);
+            } else {
+                buzzerController.play(FAILURE_NOTES, FAILURE_NOTES_LEN);
+            }
         }
 
         String response = "{";
