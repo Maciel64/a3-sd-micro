@@ -35,6 +35,21 @@ void WebServerService::registerRoutes()
                     "application/json",
                     "{\"success\":true}"); });
 
+    server.on("/gate/open", HTTP_GET, [this]()
+              { 
+        ledController.setOpen(true);
+        server.send(
+                                                                                  200,
+                                                                                  "application/json",
+                                                                                  "{\"success\":true}"); });
+
+    server.on("/gate/close", HTTP_GET, [this]()
+              { 
+                ledController.setOpen(false);server.send(
+                    200,
+                    "application/json",
+                    "{\"success\":true}"); });
+
     server.on("/gate", HTTP_POST, [this]()
               {
 
